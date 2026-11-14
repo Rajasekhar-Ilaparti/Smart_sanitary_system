@@ -1,0 +1,51 @@
+# Netlify settings for Clean Gudlavalleru
+[build]
+  publish = "public"
+  functions = "netlify/functions"
+  command = "echo 'No build step needed'"
+
+[build.environment]
+  NODE_VERSION = "20"
+
+[functions]
+  node_bundler = "esbuild"
+
+# The API runs in the Netlify function
+[[redirects]]
+  from = "/api/*"
+  to = "/.netlify/functions/api/:splat"
+  status = 200
+  force = true
+
+# Short page addresses
+[[redirects]]
+  from = "/track"
+  to = "/report.html"
+  status = 200
+
+[[redirects]]
+  from = "/report"
+  to = "/report.html"
+  status = 200
+
+[[redirects]]
+  from = "/department"
+  to = "/department.html"
+  status = 200
+
+[[redirects]]
+  from = "/worker"
+  to = "/worker.html"
+  status = 200
+
+[[redirects]]
+  from = "/film"
+  to = "/film.html"
+  status = 200
+
+# Basic security headers
+[[headers]]
+  for = "/*"
+  [headers.values]
+    X-Content-Type-Options = "nosniff"
+    Referrer-Policy = "strict-origin-when-cross-origin"

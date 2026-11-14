@@ -1,0 +1,132 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Report a Waste Problem - Clean Gudlavalleru</title>
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
+<link rel="stylesheet" href="/css/style.css">
+<style>
+  .tabs { display: flex; gap: 6px; margin: 18px 0; flex-wrap: wrap; }
+  .tabs button { flex: 1; min-width: 120px; padding: 12px; border-radius: 10px; border: 1px solid var(--line); background: #fff; font: inherit; font-weight: 600; cursor: pointer; }
+  .tabs button.active { background: var(--green); color: #fff; border-color: var(--green); }
+  .step { display: flex; align-items: center; gap: 10px; margin: 22px 0 8px; font-size: 18px; font-weight: 700; }
+  .step .n { width: 30px; height: 30px; border-radius: 50%; background: var(--green); color: #fff; display: inline-flex; align-items: center; justify-content: center; font-size: 15px; flex: none; }
+  .zone-chip { margin-top: 8px; font-size: 14px; font-weight: 600; }
+  .success { text-align: center; }
+  .success .tick { font-size: 64px; }
+  .track-id { font-size: 30px; font-weight: 800; letter-spacing: .05em; color: var(--green-dark); background: var(--green-soft); padding: 10px 18px; border-radius: 12px; display: inline-block; margin: 8px 0; user-select: all; }
+  .my-item { display: flex; gap: 12px; align-items: center; padding: 12px 0; border-bottom: 1px solid var(--line); cursor: pointer; }
+  .my-item img { width: 70px; height: 56px; object-fit: cover; border-radius: 8px; flex: none; }
+  .lang-btn { background: rgba(255,255,255,.18) !important; color: #fff !important; font-weight: 700 !important; }
+  /* When shown inside the home page "Report" tab */
+  body.embed { background: transparent; }
+  body.embed .footer { display: none; }
+  body.embed .topbar { position: static; background: none; }
+  body.embed .topbar .brand, body.embed .topbar nav a { display: none; }
+  body.embed .topbar nav { margin-left: auto; }
+  body.embed .topbar { display: none; }
+  body.embed .tabs { margin-top: 4px; }
+  @media (max-width: 640px) {
+    .tabs { display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; margin: 12px 0; }
+    .tabs button { min-width: 0; padding: 10px 4px; font-size: 13px; line-height: 1.25; min-height: 48px; }
+    .step { font-size: 17px; margin-top: 18px; }
+    .track-id { font-size: 24px; }
+    body.embed main.wrap { padding-left: 0; padding-right: 0; }
+  }
+</style>
+</head>
+<body>
+<script>if (/[?&]embed=/.test(location.search)) document.body.classList.add('embed');</script>
+<header class="topbar">
+  <div class="wrap">
+    <a class="brand" href="/"><span class="logo">♻️</span> <span data-t="brand">Clean Gudlavalleru</span></a>
+    <nav>
+      <a href="/" data-t="home">Home</a>
+      <button class="lang-btn" id="langBtn">తెలుగు</button>
+    </nav>
+  </div>
+</header>
+
+<main class="wrap" style="max-width:760px">
+  <div class="tabs">
+    <button data-tab="report" class="active" data-t="tabReport">📸 Report problem</button>
+    <button data-tab="track" data-t="tabTrack">🔎 Track report</button>
+    <button data-tab="mine" data-t="tabMine">📋 My reports</button>
+  </div>
+
+  <!-- REPORT -->
+  <section id="tab-report">
+    <div class="card" id="reportForm">
+      <h1 style="font-size:24px" data-t="reportTitle">Report a garbage / waste problem</h1>
+      <p class="hint" data-t="reportSub">No sign-up needed. Your report goes straight to the sanitary department of that area.</p>
+
+      <div class="step"><span class="n">1</span><span data-t="s1">Take a photo of the place</span></div>
+      <label class="photo-drop" id="photoDrop">
+        <span class="big-icon">📷</span>
+        <span data-t="tapPhoto">Tap here to take a photo</span>
+        <input type="file" id="photoInput" accept="image/*" capture="environment" hidden>
+      </label>
+      <img id="photoPreview" class="photo-preview hidden" alt="Photo preview">
+
+      <div class="step"><span class="n">2</span><span data-t="s2">Location</span></div>
+      <div id="gpsMsg" class="msg info" data-t="gpsFinding">Finding your location…</div>
+      <div id="map" class="map"></div>
+      <p class="hint" data-t="mapHint">Drag the pin or tap the map if the spot is not exactly right.</p>
+      <div id="zoneChip" class="zone-chip"></div>
+      <button class="btn light small" id="gpsRetry" type="button" data-t="useGps">📍 Use my current location</button>
+
+      <div class="step"><span class="n">3</span><span data-t="s3">What is the problem?</span></div>
+      <div class="cat-grid" id="catGrid"></div>
+
+      <div class="step"><span class="n">4</span><span data-t="s4">Details (optional)</span></div>
+      <textarea id="desc" maxlength="500" data-tp="descPh" placeholder="Example: near the bus stop, since 3 days"></textarea>
+      <label for="phone" data-t="phoneLbl">Mobile number (optional, only if you want updates)</label>
+      <input type="tel" id="phone" maxlength="15" inputmode="tel" placeholder="98XXXXXXXX">
+
+      <div id="formMsg"></div>
+      <button class="btn big block" id="submitBtn" style="margin-top:18px" data-t="submit">Send report</button>
+    </div>
+
+    <div class="card success hidden" id="successBox">
+      <div class="tick">✅</div>
+      <h2 id="successTitle" data-t="thanks">Thank you! Your report was sent.</h2>
+      <p id="successText"></p>
+      <div data-t="yourId">Your tracking ID</div>
+      <div class="track-id" id="successId"></div>
+      <p class="hint" data-t="saveId">Save this ID. You can check the status anytime in “Track report”. It is also saved in “My reports” on this phone.</p>
+      <div style="display:flex;gap:10px;justify-content:center;flex-wrap:wrap;margin-top:14px">
+        <button class="btn" id="viewStatusBtn" data-t="viewStatus">View status</button>
+        <button class="btn light" id="anotherBtn" data-t="another">Report another problem</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- TRACK -->
+  <section id="tab-track" class="hidden">
+    <div class="card">
+      <h1 style="font-size:24px" data-t="trackTitle">Track your report</h1>
+      <div style="display:flex;gap:8px">
+        <input type="text" id="trackInput" placeholder="GW-2026-00001" style="text-transform:uppercase">
+        <button class="btn" id="trackBtn" data-t="check">Check</button>
+      </div>
+      <div id="trackMsg"></div>
+    </div>
+    <div id="trackResult" style="margin-top:16px"></div>
+  </section>
+
+  <!-- MINE -->
+  <section id="tab-mine" class="hidden">
+    <div class="card">
+      <h1 style="font-size:24px" data-t="mineTitle">My reports (on this phone)</h1>
+      <div id="mineList"></div>
+    </div>
+  </section>
+</main>
+<div class="footer">Clean Gudlavalleru · Community Service Project, SRGEC</div>
+
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script src="/js/common.js"></script>
+<script src="/js/report.js"></script>
+</body>
+</html>

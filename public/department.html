@@ -1,0 +1,341 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Sanitary Department Portal - Clean Gudlavalleru</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Sans+Telugu:wght@500;600;700;800&family=Poppins:wght@500;600;700;800&display=swap">
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
+<link rel="stylesheet" href="/css/style.css">
+<style>
+  body { font-family: "Segoe UI", system-ui, sans-serif; }
+  html[lang="te"] body { font-family: "Noto Sans Telugu", "Nirmala UI", "Segoe UI", sans-serif; }
+  .ff { font-family: Poppins, "Noto Sans Telugu", "Segoe UI", sans-serif; }
+  .lang-switch { display: inline-flex; align-items: center; gap: 6px; background: #fff; color: #14532d; border: 1px solid #d1fae5; font: inherit; font-weight: 800; border-radius: 999px; padding: 7px 14px; cursor: pointer; font-size: 14px; }
+  .lang-switch:hover { background: #dcfce7; }
+
+  /* ================= LOGIN ================= */
+  #loginView { min-height: 100vh; display: grid; grid-template-columns: 1.1fr 1fr; }
+  .login-art { background: radial-gradient(circle at 20% 10%, #22c55e 0%, #15803d 35%, #052e16 100%); color: #fff; padding: 46px 48px; display: flex; flex-direction: column; position: relative; overflow: hidden; }
+  .login-art .brandrow { display: flex; align-items: center; gap: 10px; font-weight: 800; font-size: 20px; }
+  .login-art h1 { font-size: 38px; margin: 42px 0 10px; line-height: 1.15; }
+  .login-art p.lead { color: #bbf7d0; font-size: 17px; max-width: 460px; margin: 0; }
+  .login-art ul { list-style: none; padding: 0; margin: 26px 0 0; display: grid; gap: 12px; }
+  .login-art li { display: flex; gap: 12px; align-items: center; font-weight: 600; }
+  .login-art li span.ic { width: 36px; height: 36px; border-radius: 10px; background: rgba(255,255,255,.14); display: inline-flex; align-items: center; justify-content: center; font-size: 18px; flex: none; }
+  .login-art svg { margin-top: auto; width: 100%; max-width: 520px; height: auto; }
+  .login-art .leaf { position: absolute; width: 22px; height: 10px; border-radius: 50%; background: rgba(134,239,172,.35); animation: leafFall linear infinite; }
+  @keyframes leafFall { from { transform: translateY(-40px) rotate(0); } to { transform: translateY(110vh) rotate(540deg); } }
+  .login-side { display: flex; flex-direction: column; padding: 26px 28px; background: #f6f8f5; }
+  .login-side .top { display: flex; justify-content: space-between; align-items: center; }
+  .login-side .top a { color: var(--muted); text-decoration: none; font-weight: 600; font-size: 14px; }
+  .login-card { width: 100%; max-width: 420px; margin: auto; background: #fff; border-radius: 22px; padding: 34px 32px; box-shadow: 0 20px 50px rgba(15,23,42,.10); }
+  .login-card h2 { font-size: 28px; margin: 0 0 4px; }
+  .field { position: relative; }
+  .field .ic { position: absolute; left: 13px; top: 50%; transform: translateY(-50%); font-size: 17px; opacity: .6; pointer-events: none; }
+  .field input { padding-left: 42px !important; height: 50px; border-radius: 12px !important; }
+  .field .eye { position: absolute; right: 8px; top: 50%; transform: translateY(-50%); border: 0; background: none; cursor: pointer; font-size: 18px; padding: 6px; border-radius: 8px; }
+  .field .eye:hover { background: #f1f5f9; }
+  .login-card .btn { height: 52px; font-size: 17px; border-radius: 12px; }
+  .demo-hint { margin-top: 18px; background: #f0fdf4; border: 1px dashed #86efac; border-radius: 12px; padding: 10px 12px; font-size: 13px; color: #166534; }
+
+  /* ================= APP SHELL ================= */
+  #appView { display: grid; grid-template-columns: 250px 1fr; min-height: 100vh; }
+  .sidebar { background: linear-gradient(180deg, #052e16, #0b3d20 60%, #14532d); color: #dcfce7; display: flex; flex-direction: column; padding: 18px 14px; position: sticky; top: 0; height: 100vh; z-index: 1500; }
+  .sidebar .sbrand { display: block; color: #fff; font-weight: 800; font-size: 17px; padding: 4px 8px 18px; border-bottom: 1px solid rgba(255,255,255,.1); margin-bottom: 14px; }
+  .sidebar .sbrand small { display: block; font-weight: 500; color: #86efac; font-size: 12px; }
+  .nav button { width: 100%; display: flex; align-items: center; gap: 12px; border: 0; background: none; color: #bbf7d0; font: inherit; font-weight: 600; padding: 11px 12px; border-radius: 12px; cursor: pointer; text-align: left; margin-bottom: 4px; font-size: 15px; }
+  .nav button:hover { background: rgba(255,255,255,.08); color: #fff; }
+  .nav button.on { background: #22c55e; color: #052e16; }
+  .nav button .ni { font-size: 18px; width: 22px; text-align: center; }
+  .nav .count { margin-left: auto; background: #ef4444; color: #fff; border-radius: 999px; font-size: 12px; font-weight: 800; padding: 1px 8px; min-width: 22px; text-align: center; }
+  .nav button.on .count { background: #052e16; }
+  .side-foot { margin-top: auto; border-top: 1px solid rgba(255,255,255,.1); padding-top: 14px; }
+  .me { display: flex; gap: 10px; align-items: center; padding: 0 6px 12px; }
+  .me .av { width: 38px; height: 38px; border-radius: 12px; background: #22c55e; color: #052e16; font-weight: 800; display: flex; align-items: center; justify-content: center; flex: none; }
+  .me b { color: #fff; font-size: 14px; display: block; line-height: 1.2; }
+  .me small { color: #86efac; font-size: 12px; }
+  .side-btns { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; }
+  .side-btns button { border: 0; background: rgba(255,255,255,.1); color: #dcfce7; border-radius: 10px; padding: 8px; font: inherit; font-size: 13px; font-weight: 600; cursor: pointer; }
+  .side-btns button:hover { background: rgba(255,255,255,.18); }
+  .side-btns .full { grid-column: 1 / -1; }
+
+  main.content { padding: 22px 26px 40px; min-width: 0; }
+  .pagehead { display: flex; align-items: center; gap: 14px; margin-bottom: 18px; flex-wrap: wrap; }
+  .pagehead h1 { font-size: 26px; margin: 0; }
+  .pagehead .sub { color: var(--muted); font-size: 14px; }
+  .live-dot { margin-left: auto; display: inline-flex; align-items: center; gap: 8px; font-size: 13px; color: var(--muted); background: #fff; border-radius: 999px; padding: 6px 12px; box-shadow: var(--shadow); }
+  .live-dot i { width: 9px; height: 9px; border-radius: 50%; background: #22c55e; box-shadow: 0 0 0 0 rgba(34,197,94,.6); animation: pulse 2s infinite; }
+  @keyframes pulse { 70% { box-shadow: 0 0 0 9px rgba(34,197,94,0); } 100% { box-shadow: 0 0 0 0 rgba(34,197,94,0); } }
+  .hamb { display: none; border: 0; background: #fff; border-radius: 10px; padding: 8px 12px; font-size: 20px; box-shadow: var(--shadow); cursor: pointer; }
+
+  .kpis { display: grid; grid-template-columns: repeat(auto-fit, minmax(128px, 1fr)); gap: 14px; }
+  .kpi { background: #fff; border-radius: 16px; padding: 16px; box-shadow: var(--shadow); cursor: pointer; position: relative; overflow: hidden; transition: transform .15s; border: 2px solid transparent; }
+  .kpi:hover { transform: translateY(-2px); }
+  .kpi .ki { width: 38px; height: 38px; border-radius: 11px; display: flex; align-items: center; justify-content: center; font-size: 19px; background: var(--bg2); }
+  .kpi .num { font-size: 32px; font-weight: 800; margin-top: 10px; line-height: 1; color: var(--ink); }
+  .kpi .lbl { color: var(--muted); font-weight: 600; font-size: 13px; margin-top: 4px; }
+  .kpi::after { content: ""; position: absolute; left: 0; right: 0; bottom: 0; height: 4px; background: var(--c); }
+  .panel { background: #fff; border-radius: 18px; box-shadow: var(--shadow); padding: 18px; min-width: 0; }
+  .panel h2 { font-size: 17px; margin: 0 0 12px; display: flex; align-items: center; gap: 8px; }
+  .panel h2 .more { margin-left: auto; font-size: 13px; font-weight: 600; color: var(--green); cursor: pointer; background: none; border: 0; font-family: inherit; }
+  .row2 { display: grid; grid-template-columns: minmax(0, 1.4fr) minmax(0, 1fr); gap: 16px; margin-top: 16px; }
+  .chart-box { position: relative; height: 260px; }
+  .attn { display: flex; gap: 12px; align-items: center; padding: 10px 6px; border-bottom: 1px solid var(--line); cursor: pointer; border-radius: 10px; }
+  .attn:hover { background: #f8fafc; }
+  .attn img { width: 56px; height: 46px; object-fit: cover; border-radius: 8px; flex: none; }
+  .attn .why { font-size: 12px; font-weight: 700; }
+  .empty { color: var(--muted); text-align: center; padding: 26px 10px; }
+
+  .toolbar { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; margin-bottom: 12px; }
+  .toolbar select, .toolbar input { width: auto; padding: 9px 10px; border-radius: 10px; }
+  .toolbar .grow { flex: 1; min-width: 160px; }
+  .chips { display: flex; gap: 6px; flex-wrap: wrap; }
+  .chips button { border: 1px solid var(--line); background: #fff; border-radius: 999px; padding: 6px 12px; font: inherit; font-size: 13px; font-weight: 600; cursor: pointer; display: inline-flex; align-items: center; gap: 6px; }
+  .chips button i { width: 10px; height: 10px; border-radius: 50%; display: inline-block; }
+  .chips button.on { background: #0f172a; color: #fff; border-color: #0f172a; }
+
+  .wcards { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 14px; }
+  .wcard { background: #fff; border-radius: 16px; box-shadow: var(--shadow); padding: 16px; }
+  .wcard .top { display: flex; gap: 12px; align-items: center; }
+  .wcard .av { width: 46px; height: 46px; border-radius: 14px; background: #ffedd5; color: #c2410c; font-weight: 800; font-size: 20px; display: flex; align-items: center; justify-content: center; flex: none; }
+  .wcard .stats { display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; margin: 14px 0; text-align: center; }
+  .wcard .stats div { background: #f8fafc; border-radius: 10px; padding: 8px 4px; }
+  .wcard .stats b { display: block; font-size: 18px; }
+  .wcard .stats span { font-size: 11px; color: var(--muted); font-weight: 600; }
+  .state { display: inline-flex; align-items: center; gap: 6px; font-size: 13px; font-weight: 700; padding: 3px 10px; border-radius: 999px; }
+  .state i { width: 8px; height: 8px; border-radius: 50%; background: currentColor; }
+
+  .toast-wrap { position: fixed; right: 18px; bottom: 18px; z-index: 3000; display: flex; flex-direction: column; gap: 10px; max-width: 360px; }
+  .toast { background: #0f172a; color: #fff; border-radius: 14px; padding: 12px 14px; display: flex; gap: 12px; align-items: center; box-shadow: 0 14px 40px rgba(0,0,0,.3); cursor: pointer; animation: toastIn .35s cubic-bezier(.3,1.4,.6,1); border-left: 5px solid var(--tc, #22c55e); }
+  .toast img { width: 52px; height: 42px; object-fit: cover; border-radius: 8px; flex: none; }
+  .toast b { display: block; font-size: 14px; }
+  .toast small { color: #cbd5e1; font-size: 12px; }
+  .toast .x { margin-left: auto; background: none; border: 0; color: #94a3b8; font-size: 18px; cursor: pointer; align-self: flex-start; }
+  @keyframes toastIn { from { transform: translateX(120%); opacity: 0; } to { transform: none; opacity: 1; } }
+
+  .kv { display: grid; grid-template-columns: 150px 1fr; gap: 6px 12px; font-size: 15px; }
+  .kv dt { color: var(--muted); font-weight: 600; }
+  .kv dd { margin: 0; }
+  .actions-box { background: #f8fafc; border-radius: 12px; padding: 14px; margin-top: 14px; }
+  .legend { display: flex; gap: 14px; font-size: 13px; color: var(--muted); font-weight: 600; flex-wrap: wrap; }
+  .legend i { display: inline-block; width: 12px; height: 4px; border-radius: 2px; margin-right: 6px; vertical-align: middle; }
+  .bar-row { display: grid; grid-template-columns: 150px 1fr 34px; align-items: center; gap: 10px; margin: 8px 0; font-size: 14px; }
+  .bar-row .track { height: 12px; background: #f1f5f9; border-radius: 6px; overflow: hidden; }
+  .bar-row .fill { height: 100%; border-radius: 0 4px 4px 0; }
+  .bar-row b { text-align: right; }
+
+  @media (max-width: 1100px) { .row2 { grid-template-columns: 1fr; } }
+  @media (max-width: 900px) {
+    #loginView { grid-template-columns: 1fr; }
+    .login-art { padding: 26px 22px 0; }
+    .login-art h1 { font-size: 28px; margin-top: 22px; }
+    .login-art ul, .login-art svg { display: none; }
+    .login-art p.lead { margin-bottom: 22px; }
+    #appView { grid-template-columns: 1fr; }
+    .sidebar { position: fixed; left: 0; top: 0; bottom: 0; width: 260px; transform: translateX(-105%); transition: transform .25s; box-shadow: 10px 0 30px rgba(0,0,0,.3); }
+    .sidebar.open { transform: none; }
+    .hamb { display: inline-block; }
+    main.content { padding: 16px 16px 30px; }
+    .kv { grid-template-columns: 1fr; }
+  }
+  .show-sm { display: none; }
+  @media (max-width: 900px) {
+    .hamb { min-width: 46px; min-height: 46px; padding: 8px 12px; font-size: 22px; }
+  }
+  @media (max-width: 640px) {
+    .show-sm { display: block; }
+    /* complaints list: one tappable card per complaint instead of a wide table */
+    #listView table, #listView tbody { display: block; width: 100%; }
+    #listView thead { display: none; }
+    #listView tr { display: grid; grid-template-columns: 64px 1fr; gap: 6px 12px; padding: 12px 2px; border-bottom: 1px solid var(--line); align-items: start; }
+    #listView td { display: block; padding: 0; border: 0; min-width: 0; }
+    #listView td:first-child { grid-row: span 2; }
+    #listView td .thumb { width: 64px; height: 64px; }
+    #listView td.hide-sm { display: none; }
+    .pagehead { flex-wrap: nowrap; gap: 12px; position: sticky; top: 0; z-index: 900; background: var(--bg, #f4f7f5);
+      margin: -16px -16px 14px; padding: 10px 16px; box-shadow: 0 2px 10px rgba(15,23,42,.06); }
+    .pagehead > div { min-width: 0; flex: 1; }
+    .pagehead .sub { font-size: 12.5px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .pagehead h1 { font-size: 21px; }
+    #v-complaints .toolbar select { flex: 1 1 100%; min-width: 0; }
+    #v-complaints .toolbar input { flex: 1 1 0; min-width: 0; }
+    .live-dot { display: none; }
+    .bar-row { grid-template-columns: 110px 1fr 30px; }
+  }
+</style>
+</head>
+<body>
+
+<!-- ======================= LOGIN ======================= -->
+<div id="loginView" class="hidden">
+  <div class="login-art">
+    <div class="brandrow ff"><span style="font-size:28px">♻️</span> <span data-i18n="brand">Clean Gudlavalleru</span></div>
+    <h1 class="ff" data-i18n="loginHero">Sanitary Department Portal</h1>
+    <p class="lead" data-i18n="loginLead">Receive complaints from citizens, send workers, verify the cleaning and keep Gudlavalleru clean.</p>
+    <ul>
+      <li><span class="ic">📍</span><span data-i18n="f1">Complaints from your zone only, with photo and GPS</span></li>
+      <li><span class="ic">👷</span><span data-i18n="f2">Assign workers and see who is on site</span></li>
+      <li><span class="ic">📷</span><span data-i18n="f3">Verify before & after photos</span></li>
+      <li><span class="ic">📊</span><span data-i18n="f4">Live alerts, charts and Excel reports</span></li>
+    </ul>
+    <svg viewBox="0 0 520 220" aria-hidden="true">
+      <ellipse cx="260" cy="206" rx="250" ry="10" fill="rgba(0,0,0,.18)"/>
+      <rect x="40" y="70" width="120" height="136" rx="6" fill="#e2e8f0"/><rect x="40" y="62" width="120" height="14" rx="4" fill="#cbd5e1"/>
+      <g fill="#93c5fd"><rect x="56" y="88" width="22" height="20" rx="3"/><rect x="89" y="88" width="22" height="20" rx="3"/><rect x="122" y="88" width="22" height="20" rx="3"/><rect x="56" y="122" width="22" height="20" rx="3"/><rect x="89" y="122" width="22" height="20" rx="3"/><rect x="122" y="122" width="22" height="20" rx="3"/></g>
+      <rect x="86" y="164" width="28" height="42" rx="3" fill="#334155"/>
+      <rect x="54" y="40" width="92" height="20" rx="6" fill="#16a34a"/><text x="100" y="54" text-anchor="middle" font-size="10" font-weight="800" fill="#fff" font-family="Segoe UI">SANITARY DEPT</text>
+      <g transform="translate(200 120)">
+        <rect x="0" y="0" width="190" height="72" rx="10" fill="#22c55e"/><rect x="10" y="10" width="78" height="38" rx="6" fill="#16a34a"/><rect x="98" y="10" width="80" height="38" rx="6" fill="#3b82f6"/>
+        <text x="49" y="35" text-anchor="middle" font-size="14" font-weight="800" fill="#fff" font-family="Segoe UI">WET</text><text x="138" y="35" text-anchor="middle" font-size="14" font-weight="800" fill="#fff" font-family="Segoe UI">DRY</text>
+        <rect x="190" y="20" width="62" height="52" rx="10" fill="#f8fafc"/><rect x="200" y="28" width="34" height="22" rx="4" fill="#93c5fd"/>
+        <circle cx="40" cy="78" r="15" fill="#111827"/><circle cx="40" cy="78" r="6" fill="#9ca3af"/><circle cx="150" cy="78" r="15" fill="#111827"/><circle cx="150" cy="78" r="6" fill="#9ca3af"/><circle cx="226" cy="78" r="15" fill="#111827"/><circle cx="226" cy="78" r="6" fill="#9ca3af"/>
+      </g>
+      <g transform="translate(470 140)"><path d="M-22 0 L22 0 L18 64 L-18 64 Z" fill="#16a34a"/><rect x="-26" y="-8" width="52" height="10" rx="4" fill="#15803d"/><text x="0" y="40" text-anchor="middle" font-size="22" fill="#fff">♻</text></g>
+    </svg>
+  </div>
+  <div class="login-side">
+    <div class="top">
+      <a href="/" data-i18n="backSite">← Back to website</a>
+      <button class="lang-switch js-lang">🌐 <span class="js-lang-label">తెలుగు</span></button>
+    </div>
+    <div class="login-card">
+      <div style="font-size:34px">🏢</div>
+      <h2 class="ff" data-i18n="welcome">Welcome back</h2>
+      <p class="hint" style="margin:0 0 6px" data-i18n="loginSub">Log in with your department account. Each department sees only complaints from its own area.</p>
+      <label for="lu" data-i18n="username">Username</label>
+      <div class="field"><span class="ic">👤</span><input type="text" id="lu" autocomplete="username" spellcheck="false"></div>
+      <label for="lp" data-i18n="password">Password</label>
+      <div class="field"><span class="ic">🔒</span><input type="password" id="lp" autocomplete="current-password"><button class="eye" id="eyeBtn" type="button" aria-label="Show password">👁️</button></div>
+      <div id="loginMsg"></div>
+      <button class="btn block" id="loginBtn" style="margin-top:20px" data-i18n="login">Log in</button>
+      <div class="demo-hint" data-i18n="demoHint">Demo accounts: see HOW-TO-RUN.md (admin, north, southwest, southeast).</div>
+    </div>
+  </div>
+</div>
+
+<!-- ======================= APP ======================= -->
+<div id="appView" class="hidden">
+  <aside class="sidebar" id="sidebar">
+    <div class="sbrand ff">♻️ <span data-i18n="brand">Clean Gudlavalleru</span><small data-i18n="portalName">Sanitary Department Portal</small></div>
+    <nav class="nav">
+      <button data-view="overview" class="on"><span class="ni">📊</span><span data-i18n="navOverview">Overview</span></button>
+      <button data-view="complaints"><span class="ni">📋</span><span data-i18n="navComplaints">Complaints</span><span class="count hidden" id="newCount">0</span></button>
+      <button data-view="map"><span class="ni">🗺️</span><span data-i18n="navMap">Map</span></button>
+      <button data-view="workers"><span class="ni">👷</span><span data-i18n="navWorkers">Workers</span></button>
+      <button data-view="analytics"><span class="ni">📈</span><span data-i18n="navAnalytics">Analytics</span></button>
+    </nav>
+    <div class="side-foot">
+      <div class="me"><div class="av" id="meAv">N</div><div><b id="meName"></b><small id="meZone"></small></div></div>
+      <div class="side-btns">
+        <button id="soundBtn">🔔 <span data-i18n="soundOn">Sound on</span></button>
+        <button class="js-lang">🌐 <span class="js-lang-label">తెలుగు</span></button>
+        <button class="full" id="logoutBtn">⎋ <span data-i18n="logout">Log out</span></button>
+      </div>
+    </div>
+  </aside>
+
+  <main class="content">
+    <div class="pagehead">
+      <button class="hamb" id="hamb" aria-label="Menu">☰</button>
+      <div><h1 class="ff" id="pageTitle"></h1><div class="sub" id="pageSub"></div></div>
+      <span class="live-dot"><i></i><span id="liveText">Live</span></span>
+    </div>
+
+    <!-- OVERVIEW -->
+    <section id="v-overview">
+      <div class="kpis" id="kpis"></div>
+      <div class="row2">
+        <div class="panel">
+          <h2>📈 <span data-i18n="trendTitle">Complaints in the last 14 days</span></h2>
+          <div class="legend"><span><i style="background:#2563eb"></i><span data-i18n="received">Received</span></span><span><i style="background:#16a34a"></i><span data-i18n="solved">Solved</span></span></div>
+          <div class="chart-box"><canvas id="trendChart" aria-label="Line chart of complaints received and solved per day"></canvas></div>
+        </div>
+        <div class="panel">
+          <h2>⚠️ <span data-i18n="needsAttention">Needs your attention</span> <button class="more" data-goto="complaints" data-i18n="viewAll">View all ›</button></h2>
+          <div id="attnList"></div>
+        </div>
+      </div>
+      <div class="row2">
+        <div class="panel">
+          <h2>📊 <span data-i18n="statusTitle">Complaints by status</span></h2>
+          <div id="statusBars"></div>
+        </div>
+        <div class="panel">
+          <h2>👷 <span data-i18n="workersNow">Workers right now</span> <button class="more" data-goto="workers" data-i18n="manage">Manage ›</button></h2>
+          <div id="workersNow"></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- COMPLAINTS -->
+    <section id="v-complaints" class="hidden">
+      <div class="panel">
+        <div class="toolbar">
+          <select id="fStatus"></select>
+          <select id="fCat"></select>
+          <select id="fZone" class="hidden"></select>
+          <input type="text" id="fSearch" class="grow" data-i18n-ph="searchPh" placeholder="Search ID, text or worker…">
+          <button class="btn light small" id="exportBtn">⬇ <span data-i18n="export">Excel (CSV)</span></button>
+        </div>
+        <div id="listView" style="overflow-x:auto"></div>
+      </div>
+    </section>
+
+    <!-- MAP -->
+    <section id="v-map" class="hidden">
+      <div class="panel">
+        <div class="toolbar">
+          <div class="chips" id="mapChips"></div>
+          <label style="margin:0 0 0 auto;display:flex;align-items:center;gap:8px;font-weight:600;cursor:pointer"><input type="checkbox" id="heatToggle"> 🔥 <span data-i18n="heatmap">Hotspot heatmap</span></label>
+        </div>
+        <div id="dmap" class="map" style="height:calc(100vh - 230px);min-height:420px"></div>
+      </div>
+    </section>
+
+    <!-- WORKERS -->
+    <section id="v-workers" class="hidden">
+      <div class="toolbar"><span class="hint" data-i18n="workersHint">Field workers in your zone. Add new workers, reset passwords or remove workers who left.</span><button class="btn" id="addWorkerBtn" style="margin-left:auto">＋ <span data-i18n="addWorker">Add worker</span></button></div>
+      <div class="wcards" id="workerCards"></div>
+    </section>
+
+    <!-- ANALYTICS -->
+    <section id="v-analytics" class="hidden">
+      <div class="kpis" id="akpis"></div>
+      <div class="row2">
+        <div class="panel">
+          <h2>📈 <span data-i18n="trend30">Received vs solved - last 30 days</span></h2>
+          <div class="legend"><span><i style="background:#2563eb"></i><span data-i18n="received">Received</span></span><span><i style="background:#16a34a"></i><span data-i18n="solved">Solved</span></span></div>
+          <div class="chart-box" style="height:280px"><canvas id="trend30Chart" aria-label="Line chart of complaints received and solved per day, last 30 days"></canvas></div>
+        </div>
+        <div class="panel">
+          <h2>🏷️ <span data-i18n="byType">Problems by type</span></h2>
+          <div id="catBars"></div>
+        </div>
+      </div>
+      <div class="row2">
+        <div class="panel">
+          <h2>👷 <span data-i18n="workerPerf">Worker performance</span></h2>
+          <div style="overflow-x:auto" id="perfTable"></div>
+        </div>
+        <div class="panel">
+          <h2>🔥 <span data-i18n="hotspots">Garbage hotspots</span></h2>
+          <p class="hint" style="margin-top:-6px" data-i18n="hotspotsHint">Darker red = more complaints. Place extra dustbins or awareness boards here.</p>
+          <div id="hmap" class="map" style="height:300px"></div>
+        </div>
+      </div>
+    </section>
+  </main>
+</div>
+
+<div id="modal" class="modal-back hidden"><div class="modal"><button class="close" id="closeModal" aria-label="Close">×</button><div id="modalBody"></div></div></div>
+<div class="toast-wrap" id="toasts" aria-live="polite"></div>
+
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script src="https://unpkg.com/leaflet.heat@0.2.0/dist/leaflet-heat.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+<script src="/js/common.js"></script>
+<script src="/js/department.js"></script>
+</body>
+</html>

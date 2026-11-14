@@ -1,0 +1,14 @@
+# Local data (reports, photos) - not uploaded
+data/
+
+# Secret keys - never upload
+.env
+
+node_modules/
+.netlify/
+
+# Local editor settings
+.claude/
+
+# Empty repo made by GitHub Desktop (not part of the app)
+Smart_sanitary_system/

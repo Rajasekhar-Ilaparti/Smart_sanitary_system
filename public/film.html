@@ -1,0 +1,38 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Clean Gudlavalleru - Story Video</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Sans+Telugu:wght@500;600;700;800&family=Poppins:wght@500;600;700;800&display=swap">
+<link rel="stylesheet" href="/css/style.css">
+<style>
+  body { background: radial-gradient(circle at 50% 30%, #14532d, #03200f 70%); min-height: 100vh; }
+  main { padding: 20px 16px 30px; }
+  .film { max-width: min(1400px, calc((100vh - 190px) * 16 / 9)); }
+  .back { display: inline-block; color: #bbf7d0; margin-bottom: 12px; font-weight: 600; text-decoration: none; }
+</style>
+</head>
+<body>
+<main>
+  <div style="max-width:1400px;margin:0 auto;display:flex;justify-content:space-between;align-items:center;gap:10px"><a class="back" href="/" id="backLink">← Back to Clean Gudlavalleru</a><button id="langSwitch" style="background:#fff;color:#14532d;border:0;border-radius:999px;padding:7px 14px;font:inherit;font-weight:800;cursor:pointer">🌐 <span id="langLabel">తెలుగు</span></button></div>
+  <div id="film"></div>
+  <p style="text-align:center;color:#86efac;font-size:14px;margin-top:14px">Tip: press ⛶ for full screen.</p>
+</main>
+<script src="/js/common.js"></script>
+<script src="/js/film.js"></script>
+<script>
+window.film = CleanFilm.createPlayer(document.getElementById('film'), { autoplay: true, loop: true });
+let lang = store('gw_lang') === 'te' ? 'te' : 'en';
+function applyLang() {
+  document.documentElement.lang = lang;
+  document.getElementById('langLabel').textContent = lang === 'te' ? 'English' : 'తెలుగు';
+  document.getElementById('backLink').textContent = lang === 'te' ? '← క్లీన్ గుడ్లవల్లేరుకు వెనక్కి' : '← Back to Clean Gudlavalleru';
+  CleanFilm.setLang(lang);
+}
+document.getElementById('langSwitch').onclick = () => { lang = lang === 'te' ? 'en' : 'te'; store('gw_lang', lang); applyLang(); };
+applyLang();
+</script>
+</body>
+</html>
