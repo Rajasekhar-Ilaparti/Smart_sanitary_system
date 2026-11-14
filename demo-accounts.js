@@ -1,6 +1,13 @@
 // ============================================================
-//  Demo login accounts (created the first time the server starts)
-//  Change these before any real use. Delete data/db.json to re-create.
+//  Login accounts (created the first time the app starts)
+//
+//  The passwords below are ONLY for the offline demo (START.bat).
+//  On the live site (Netlify + Supabase) they are NOT used: the passwords
+//  come from hidden Netlify environment variables instead -
+//    ADMIN_PASSWORD   for "admin" (all zones)
+//    DEPT_PASSWORD    for "north", "southwest", "southeast"
+//    WORKER_PASSWORD  for every worker (each worker can change it in Profile)
+//  This file is public on GitHub, so never put real passwords here.
 // ============================================================
 
 module.exports = [

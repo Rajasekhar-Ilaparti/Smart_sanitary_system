@@ -11,12 +11,20 @@ You need free accounts on https://supabase.com, https://github.com and https://n
 
 ---
 
-## Before you start: change the passwords
-The demo passwords (`admin123`, `north123`, `worker123`, ...) are written in `HOW-TO-RUN.md`, so anyone who reads it could log in to your live site.
-1. Open `demo-accounts.js` and give every account a new password (at least 6 characters).
-2. Do this **before the first deploy**. The accounts are created from this file the first time the site opens.
+## Passwords on the live site
+The code is public on GitHub, so the live site does **not** use the demo passwords from `demo-accounts.js` (`admin123`, `north123`, ...). Those only work in the offline `START.bat` demo.
 
-Workers can change their own password later in the worker app, under **Profile**. The department can reset workers' passwords under **Workers**.
+On the live site, the passwords come from three hidden Netlify settings that you choose in step 3:
+| Setting | Used for |
+|---|---|
+| `ADMIN_PASSWORD` | `admin` (all zones) |
+| `DEPT_PASSWORD` | `north`, `southwest`, `southeast` |
+| `WORKER_PASSWORD` | every worker (`ramesh`, `lakshmi`, ...) |
+
+Each must be at least 8 characters. Until all three are set, the site refuses to create any accounts, so it never falls back to the public demo passwords.
+The usernames stay the same. Workers can change their own password later in the worker app, under **Profile**, and the department can reset workers' passwords under **Workers**.
+
+> The passwords are only used once, when the accounts are first created. Changing these settings later does not change existing accounts. To start over, run `supabase/reset.sql`.
 
 ---
 
@@ -50,8 +58,11 @@ Netlify deploys from a GitHub repository.
 3. Before deploying, open **Add environment variables** (or after deploying: **Site configuration**, then **Environment variables**) and add:
    | Key | Value |
    |---|---|
-   | `SUPABASE_URL` | the Project URL from step 1 |
-   | `SUPABASE_SERVICE_KEY` | the service_role key from step 1 (tick **Contains secret values**) |
+   | `SUPABASE_URL` | the Project URL from step 1, like `https://abcdefgh.supabase.co` (without `/rest/v1/`) |
+   | `SUPABASE_SERVICE_KEY` | the secret key from step 1, `sb_secret_...` (tick **Contains secret values**) |
+   | `ADMIN_PASSWORD` | a password you choose for `admin` (8+ characters, secret) |
+   | `DEPT_PASSWORD` | a password for the zone departments (8+ characters, secret) |
+   | `WORKER_PASSWORD` | a starting password for workers (8+ characters, secret) |
 4. Click **Deploy**. After about a minute you get an address like `https://clean-gudlavalleru.netlify.app`. You can rename it under **Site configuration**, then **Change site name**.
 
 > Netlify's drag-and-drop "Deploy manually" page does not run the API function. Use the GitHub import.
@@ -71,7 +82,7 @@ In Supabase, **Table Editor** now shows `gw_users`, `gw_reports` and `gw_session
 - **Update the site:** change files, then in GitHub Desktop click **Commit** and **Push**. Netlify redeploys automatically in about a minute.
 - **Start again with fresh sample data:** in Supabase, open **SQL Editor**, run `supabase/reset.sql`, then open the website once. This deletes all reports and accounts.
 - **Real use (not a classroom demo):** set `DEMO_MODE: false` in `config.js`. Workers then *must* be within 150 m of the spot to check in.
-- **Test against Supabase from your computer:** copy `.env.example` to `.env` and fill in the two values. `START.bat` then uses Supabase instead of the `data` folder. Delete `.env` to go back.
+- **Test against Supabase from your computer:** copy `.env.example` to `.env` and fill in all the values. `START.bat` then uses your **live** Supabase data instead of the `data` folder. To go back to the offline demo, rename `.env` to something else, for example `.env.off`. `.env` is listed in `.gitignore`, so it is never uploaded to GitHub.
 
 ## Free plan limits worth knowing
 - **Supabase free projects pause after 7 days with no visits.** Open the site, or click **Restore** in Supabase, before a presentation.

@@ -19,6 +19,7 @@ Double-click **`START.bat`**. A black window opens and the browser opens the hom
 The maps need an internet connection.
 
 ## 3. Demo logins
+These passwords only work in the **offline demo** (`START.bat`). The live website uses secret passwords set in Netlify (see [DEPLOY.md](DEPLOY.md)). The usernames are the same.
 
 | Who | Username | Password | Sees |
 |---|---|---|---|
