@@ -137,13 +137,11 @@ const unsigned long ATOMIZER_REST_TIME  = 60000;  // pause after a max run
 
 unsigned long lastSensorRead = 0;
 unsigned long lastOLEDChange = 0;
-unsigned long lastBmeRetry   = 0;
 unsigned long bootTime       = 0;
 
 const unsigned long SENSOR_INTERVAL    = 2000;
 const unsigned long OLED_INTERVAL      = 5000;
 const unsigned long IP_DISPLAY_TIME    = 10000;
-const unsigned long BME_RETRY_INTERVAL = 10000;
 
 // ============================================================
 // OLED SCREENS
@@ -756,47 +754,18 @@ void atomizerSafety() {
 // SENSOR
 // ============================================================
 
+// Same as the original sketch: read the BME280 directly.
 void readSensor() {
 
-  // Retry the sensor if it was not found
   if (!bmeOK) {
-
     sensorValid = false;
-
-    if (millis() - lastBmeRetry >= BME_RETRY_INTERVAL) {
-
-      lastBmeRetry = millis();
-
-      if (bme.begin(BME_ADDRESS, &Wire)) {
-        bmeOK = true;
-        Serial.println("BME280 FOUND (retry)");
-      }
-    }
-
-    if (!bmeOK)
-      return;
-  }
-
-  float t = bme.readTemperature();
-  float h = bme.readHumidity();
-
-  // A disconnected sensor gives NaN or impossible values
-  if (isnan(t) || isnan(h) || t < -40 || t > 85 || h < 0 || h > 100) {
-
-    if (sensorValid)
-      Serial.println("BME280 READ FAILED");
-
-    sensorValid = false;
-    temperature = NAN;
-    humidity = NAN;
-    bmeOK = false;          // try begin() again later
-    lastBmeRetry = millis();
     return;
   }
 
-  temperature = t;
-  humidity = h;
-  sensorValid = true;
+  temperature = bme.readTemperature();
+  humidity = bme.readHumidity();
+
+  sensorValid = !isnan(temperature) && !isnan(humidity);
 }
 
 // ============================================================
@@ -1338,10 +1307,30 @@ void setup() {
   // BME280
   Serial.println("Starting BME280...");
 
-  bmeOK = bme.begin(BME_ADDRESS, &Wire);
-  lastBmeRetry = millis();
+  // Same as the original sketch
+  if (bme.begin(BME_ADDRESS)) {
 
-  Serial.println(bmeOK ? "BME280 FOUND at 0x76" : "BME280 NOT FOUND");
+    bmeOK = true;
+    Serial.println("BME280 FOUND at 0x76");
+  }
+  else {
+
+    bmeOK = false;
+    Serial.println("BME280 NOT FOUND");
+
+    // Help find the problem: list every device on the I2C bus
+    Serial.println("I2C scan:");
+    for (byte addr = 1; addr < 127; addr++) {
+      Wire.beginTransmission(addr);
+      if (Wire.endTransmission() == 0) {
+        Serial.print("  device at 0x");
+        Serial.println(addr, HEX);
+      }
+    }
+    Serial.print("Sensor ID at 0x76: 0x");
+    Serial.println(bme.sensorID(), HEX);
+    Serial.println("  0x60 = BME280, 0x58 = BMP280 (no humidity)");
+  }
 
   // Access point + captive DNS
   startAccessPoint();
