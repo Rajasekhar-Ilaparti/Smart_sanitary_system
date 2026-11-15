@@ -204,15 +204,21 @@ button{font-family:inherit}
 /* NAV */
 .nav{max-width:1180px;margin:auto;padding:12px 18px;display:flex;gap:8px;overflow-x:auto;scrollbar-width:none}
 .nav::-webkit-scrollbar{display:none}
-.nav button{flex:0 0 auto;border:1px solid #203b2c;background:#0a1811;color:#92aa9b;padding:10px 15px;
+.nav a{text-decoration:none;flex:0 0 auto;border:1px solid #203b2c;background:#0a1811;color:#92aa9b;padding:10px 15px;
   border-radius:11px;font-size:12px;font-weight:600;cursor:pointer;transition:.2s ease}
-.nav button:hover{border-color:#42654f;color:#d7e8dd}
-.nav button.active{background:#b8f36b;border-color:#b8f36b;color:#08120d}
+.nav a:hover{border-color:#42654f;color:#d7e8dd}
+.nav a.active{background:#b8f36b;border-color:#b8f36b;color:#08120d}
 
 /* MAIN */
 main{max-width:1180px;margin:auto;padding:18px}
 .tab{display:none;animation:fadeIn .22s ease}
 .tab.active{display:block}
+/* Without JavaScript, tabs still switch using the #link */
+.tab:target{display:block}
+main:has(.tab:target) .tab.active:not(:target){display:none}
+.jsWarning{max-width:1180px;margin:0 auto 4px;padding:12px 18px;color:#ffd66b;background:#302811;
+  border:1px solid #5a4a1c;border-radius:12px;font-size:13px;line-height:1.6}
+.jsReady .jsWarning{display:none}
 @keyframes fadeIn{from{opacity:0;transform:translateY(4px)}to{opacity:1;transform:translateY(0)}}
 
 /* HERO */
@@ -310,11 +316,16 @@ footer{max-width:1180px;margin:auto;padding:25px 18px 40px;text-align:center;col
 </header>
 
 <nav class="nav">
-  <button class="active" onclick="openTab('overview',this)">Overview</button>
-  <button onclick="openTab('control',this)">Control</button>
-  <button onclick="openTab('environment',this)">Environment</button>
-  <button onclick="openTab('system',this)">System</button>
+  <a href="#overview" class="active" onclick="return openTab('overview',this)">Overview</a>
+  <a href="#control" onclick="return openTab('control',this)">Control</a>
+  <a href="#environment" onclick="return openTab('environment',this)">Environment</a>
+  <a href="#system" onclick="return openTab('system',this)">System</a>
 </nav>
+
+<div id="jsWarning" class="jsWarning">
+  This window is blocking the live dashboard.<br>
+  Open <strong>http://192.168.4.1</strong> in Chrome (or your normal browser) instead.
+</div>
 
 <main>
 
@@ -463,12 +474,16 @@ function setStatus(el, text, cls){
 }
 
 /* TABS */
-function openTab(id, button){
+function openTab(id, link){
   document.querySelectorAll('.tab').forEach(function(t){ t.classList.remove('active'); });
   $(id).classList.add('active');
-  document.querySelectorAll('.nav button').forEach(function(b){ b.classList.remove('active'); });
-  button.classList.add('active');
+  document.querySelectorAll('.nav a').forEach(function(b){ b.classList.remove('active'); });
+  link.classList.add('active');
+  return false;   // don't jump to the #link
 }
+
+// JavaScript is running: hide the warning banner
+document.documentElement.classList.add('jsReady');
 
 function formatUptime(s){
   var h = Math.floor(s / 3600), m = Math.floor((s % 3600) / 60), sec = s % 60;
@@ -1034,7 +1049,7 @@ void sendNoCacheHeaders() {
 
 void handleRoot() {
   sendNoCacheHeaders();   // always load the newest page after re-flashing
-  server.send_P(200, "text/html", MAIN_PAGE);
+  server.send(200, "text/html", MAIN_PAGE);
 }
 
 String jsonNumber(float value, int decimals) {
