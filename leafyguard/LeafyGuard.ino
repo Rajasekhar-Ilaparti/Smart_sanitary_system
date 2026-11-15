@@ -502,6 +502,10 @@ async function updateData(){
     if(!r.ok) throw new Error('HTTP ' + r.status);
     const d = await r.json();
 
+    // Sensor is OK if the board says so OR real numbers arrived
+    const sensorOk = d.sensor === true ||
+      (typeof d.temperature === 'number' && typeof d.humidity === 'number');
+
     $('linkDot').className = 'dot';
     $('linkText').textContent = 'LEAFYGUARD ONLINE';
 
@@ -509,13 +513,13 @@ async function updateData(){
     $('ipAddress').textContent = d.ip;
     $('clients').textContent = d.clients;
     $('uptime').textContent = formatUptime(d.uptime);
-    $('sensorState').textContent = d.sensor ? 'BME280 OK' : 'BME280 ERROR';
+    $('sensorState').textContent = sensorOk ? 'BME280 OK' : 'BME280 ERROR';
 
     $('tempFoot').textContent = 'ON at ' + d.temperatureOn + ' °C / OFF at ' + d.temperatureOff + ' °C';
     $('humFoot').textContent  = 'ON at ' + d.humidityOn + ' % / OFF at ' + d.humidityOff + ' %';
 
     /* SENSOR VALUES */
-    if(d.sensor){
+    if(sensorOk){
       $('temperature').textContent = Number(d.temperature).toFixed(1);
       $('humidity').textContent = Number(d.humidity).toFixed(1);
 
@@ -542,7 +546,7 @@ async function updateData(){
     else                setStatus($('atomizerStatus'), 'READY', 'good');
 
     /* HERO */
-    if(!d.sensor){
+    if(!sensorOk){
       $('heroState').textContent = 'Sensor not responding';
       $('heroInfo').textContent = 'Check the BME280 wiring (address 0x76). Automatic control is paused.';
     }else if(d.atomizer){
@@ -1029,6 +1033,7 @@ void sendNoCacheHeaders() {
 }
 
 void handleRoot() {
+  sendNoCacheHeaders();   // always load the newest page after re-flashing
   server.send_P(200, "text/html", MAIN_PAGE);
 }
 
